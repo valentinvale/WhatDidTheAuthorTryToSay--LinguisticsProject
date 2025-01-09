@@ -1,53 +1,70 @@
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-def predict_t5_small(text):
-    tokenizer = T5Tokenizer.from_pretrained('fine-tuned-t5_tokenizer')
-    model = T5ForConditionalGeneration.from_pretrained('fine-tuned-t5')
+app = Flask(__name__)
+
+CORS(app)
+
+@app.route('/predict_t5_small', methods=['POST'])
+def predict_t5_small():
+
+    text = request.json['text']
+
+    tokenizer = T5Tokenizer.from_pretrained('fine_tuned_t5_tokenizer')
+    model = T5ForConditionalGeneration.from_pretrained('fine_tuned_t5')
 
     model.to('cuda')
 
-    # Tokenize the input
-    input_ids = tokenizer(text, return_tensors="pt").input_ids.to("cuda")  # Move to GPU if available
+    input_ids = tokenizer(text, return_tensors="pt").input_ids.to("cuda") 
 
-    # Generate output
     outputs = model.generate(
         input_ids,
-        max_length=100,         # Allow for longer outputs if needed
-        num_beams=10,           # Increase beams for more refined results
-        repetition_penalty=2.0, # Penalize repetitive outputs
-        length_penalty=2.0,     # Encourage longer outputs
+        max_length=100,         
+        num_beams=5,           
+        repetition_penalty=3.0, 
+        length_penalty=1.0,     
+        top_k=50,               
+        top_p=0.95,             
         early_stopping=True
     )
 
-    # Decode and print the output
     decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     print("Generated Output:", decoded_output)
 
-    return decoded_output
+    return jsonify({'output': decoded_output})
 
-def predict_t5_base(text):
-    tokenizer = T5Tokenizer.from_pretrained('fine-tuned-t5_base_tokenizer')
-    model = T5ForConditionalGeneration.from_pretrained('fine-tuned-t5_base')
+@app.route('/predict_t5_base', methods=['POST'])
+def predict_t5_base():
+
+    text = request.json['text']
+
+    tokenizer = T5Tokenizer.from_pretrained('fine_tuned_t5_base_tokenizer')
+    model = T5ForConditionalGeneration.from_pretrained('fine_tuned_t5_base')
 
     model.to('cuda')
 
-    # Tokenize the input
-    input_ids = tokenizer(text, return_tensors="pt").input_ids.to("cuda")  # Move to GPU if available
+    input_ids = tokenizer(text, return_tensors="pt").input_ids.to("cuda")  
 
-    # Generate output
     outputs = model.generate(
         input_ids,
-        max_length=100,         # Allow for longer outputs if needed
-        num_beams=10,           # Increase beams for more refined results
-        repetition_penalty=2.0, # Penalize repetitive outputs
-        length_penalty=2.0,     # Encourage longer outputs
+        max_length=100,         
+        num_beams=5,           
+        repetition_penalty=3.0, 
+        length_penalty=1.0,   
+        top_k=50,              
+        top_p=0.95,             
         early_stopping=True
     )
 
-    # Decode and print the output
     decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     print("Generated Output:", decoded_output)
 
-    return decoded_output
+    return jsonify({'output': decoded_output})
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+    

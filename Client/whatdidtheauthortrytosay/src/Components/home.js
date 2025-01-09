@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import "@fontsource/pixelify-sans"; // Defaults to weight 400
+import "@fontsource/pixelify-sans"; 
+import { predict_t5_base, predict_t5_small } from "../Services/analysis_service";
 
 const Home = () => {
     const [inputText, setInputText] = useState("");
     const [outputText, setOutputText] = useState("");
-    const [selectedModel, setSelectedModel] = useState("t5-small"); // State for selected model
+    const [selectedModel, setSelectedModel] = useState("t5-small"); 
 
     useEffect(() => {
         setInputText("");
@@ -13,21 +14,48 @@ const Home = () => {
     }, []);
 
     const analyzeText = async () => {
+        if (!inputText || !selectedModel) {
+            alert("Please enter some text to analyze.");
+            return;
+        }
+        else{
+            if (selectedModel === "t5-small") {
+                const response = await predict_t5_small(inputText);
+                setOutputText(response["output"]);
+            } else if (selectedModel === "t5-base") {
+                const response = await predict_t5_base(inputText);
+                setOutputText(response["output"]);
+            }
+        }
     };
 
     return (
+        
         <div
             className="home"
             style={{
                 height: "100vh",
                 width: "100vw",
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: "#f4f4f4",
                 overflow: "hidden",
             }}
         >
+            <div>
+                <h1
+                    style={{
+                        fontFamily: "Pixelify Sans",
+                        fontSize: "40px",
+                        color: "#000",
+                        marginBottom: "20px",
+                    }}
+                >
+                    What Did The Author Try To Say?
+                </h1>
+            </div>
             <div
                 className="book-container"
                 style={{
@@ -43,15 +71,15 @@ const Home = () => {
                     position: "relative",
                 }}
             >
-                {/* Left Page - Input Section */}
+                
                 <div
                     className="left-page"
                     style={{
                         position: "absolute",
                         left: "20%",
-                        top: "35%", // Adjusted for better alignment
+                        top: "35%", 
                         width: "28%",
-                        height: "50%", // Adjusted height
+                        height: "50%", 
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "space-between",
@@ -65,7 +93,7 @@ const Home = () => {
                         placeholder="Type here..."
                         style={{
                             width: "100%",
-                            height: "70%", // Take up most of the div
+                            height: "70%", 
                             padding: "10px",
                             fontSize: "15px",
                             fontFamily: "Pixelify Sans",
@@ -82,11 +110,11 @@ const Home = () => {
                             justifyContent: "center",
                             alignItems: "center",
                             width: "100%",
-                            height: "30%", // Remaining height for the button section
+                            height: "30%", 
                         }}
                     >
                         <button
-                            onClick={() => {}}
+                            onClick={analyzeText}
                             style={{
                                 width: "120px",
                                 height: "40px",
@@ -104,7 +132,7 @@ const Home = () => {
                             Analyze
                         </button>
                     </div>
-                    {/* Radio Buttons for Model Selection */}
+                    
                     <div
                         style={{
                             width: "100%",
@@ -147,20 +175,19 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Right Page - Output Section */}
                 <div
                     className="right-page"
                     style={{
                         position: "absolute",
                         right: "20%",
-                        top: "35%", // Adjusted for better alignment
+                        top: "35%", 
                         width: "28%",
-                        height: "50%", // Adjusted height
+                        height: "50%", 
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)", // Box shadow for the right page
+                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)", 
                     }}
                 >
                     <div
