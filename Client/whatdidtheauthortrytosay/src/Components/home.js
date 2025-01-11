@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import "@fontsource/pixelify-sans"; 
-import { predict_t5_base, predict_t5_small } from "../Services/analysis_service";
+import { predict_t5_base, predict_t5_small, predict_gpt2 } from "../Services/analysis_service";
+import SyncLoader from "react-spinners/SyncLoader";
+import { TypeAnimation } from 'react-type-animation'
 
 const Home = () => {
+    const [loading, setLoading] = useState(false);
     const [inputText, setInputText] = useState("");
     const [outputText, setOutputText] = useState("");
+    const [mainThemes, setMainThemes] = useState("");
     const [selectedModel, setSelectedModel] = useState("t5-small"); 
 
     useEffect(() => {
+        setLoading(false);
         setInputText("");
         setOutputText("");
+        setMainThemes("");
         setSelectedModel("t5-small");
     }, []);
 
@@ -19,13 +25,25 @@ const Home = () => {
             return;
         }
         else{
+            setLoading(true);
             if (selectedModel === "t5-small") {
                 const response = await predict_t5_small(inputText);
                 setOutputText(response["output"]);
+                setMainThemes("Main Themes And Characters: " + response["representatives"]);
+                setLoading(false);
             } else if (selectedModel === "t5-base") {
                 const response = await predict_t5_base(inputText);
                 setOutputText(response["output"]);
+                setMainThemes("Main Themes And Characters: " + response["representatives"]);
+                setLoading(false);
             }
+            else if (selectedModel === "gpt2") {
+                const response = await predict_gpt2(inputText);
+                setOutputText(response["output"]);
+                setMainThemes("Main Themes And Characters: " + response["representatives"]);
+                setLoading(false);
+            }
+
         }
     };
 
@@ -165,12 +183,12 @@ const Home = () => {
                         <label style={{ fontFamily: "Pixelify Sans" }}>
                             <input
                                 type="radio"
-                                value="bert"
-                                checked={selectedModel === "bert"}
-                                onChange={() => setSelectedModel("bert")}
+                                value="gpt2"
+                                checked={selectedModel === "gpt2"}
+                                onChange={() => setSelectedModel("gpt2")}
                                 style={{ marginRight: "5px" }}
                             />
-                            Bert
+                            GPT2
                         </label>
                     </div>
                 </div>
@@ -203,7 +221,54 @@ const Home = () => {
                             backgroundColor: "rgba(255, 255, 255, 0.0)",
                         }}
                     >
-                        {outputText || "The analysis will appear here..."}
+                        {loading ? (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    width: "100%",
+                                    height: "100%",
+                                }}
+                            >
+                                <SyncLoader color={"#91A195"} loading={loading} size={10} />
+                            </div>
+                        ) : outputText ? (
+                            <div>
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        fontSize: "15px",
+                                        fontFamily: "Pixelify Sans",
+                                        color: "#000",
+                                    }}
+                                >
+                                    <TypeAnimation
+                                        sequence={[outputText, 0]}
+                                        wrapper="div"
+                                        cursor={true}
+                                        repeat={0}
+                                    />
+                                </div>
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        fontSize: "15px",
+                                        fontFamily: "Pixelify Sans",
+                                        color: "#000",
+                                    }}
+                                >
+                                    <TypeAnimation
+                                        sequence={[mainThemes, 0]}
+                                        wrapper="div"
+                                        cursor={true}
+                                        repeat={0}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            "Output will appear here..."
+                        )}
                     </div>
                     <div
                         style={{

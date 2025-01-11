@@ -24,3 +24,15 @@ export const predict_t5_base = async (text) => {
         console.log(e);
     }
 };
+
+export const predict_gpt2 = async (text) => {
+    try{
+        const response = await axios.post("http://localhost:5000/predict_gpt2", {
+            text: text,
+        });
+        return response.data;
+    }
+    catch(e){
+        console.log(e);
+    }
+}
